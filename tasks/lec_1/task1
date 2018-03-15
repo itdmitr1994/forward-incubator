@@ -1,0 +1,4 @@
+select count(id_log) as количество_попыток
+ from fw_process_log
+where v_message like'%2520123%'
+and n_status in(500)
