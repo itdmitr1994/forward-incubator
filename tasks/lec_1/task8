@@ -1,0 +1,4 @@
+select to_char (max(DT_TIMESTAMP),'dd.mon.yyyy')as дата, OS_USERNAME as логин
+from fw_process_log
+where ID_USER = 11136
+group by OS_USERNAME
