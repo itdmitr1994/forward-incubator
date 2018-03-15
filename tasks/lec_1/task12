@@ -1,0 +1,4 @@
+select ID_CONTRACT_TO,DT_REAL,length(V_DESCRIPTION)
+from fw_transfers
+where  length(V_DESCRIPTION)>22
+order by length(V_DESCRIPTION) desc
