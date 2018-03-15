@@ -1,0 +1,6 @@
+select to_char (max(DT_TIMESTAMP),'dd.mon.yyyy') as ДАТА,
+substr(v_message,instr(v_message,'Заказ')+6,7) as номер_заказа
+from fw_process_log
+where v_message like'%2520123%'
+and n_status in(500)
+group by v_message
