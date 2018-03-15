@@ -1,0 +1,4 @@
+SELECT  to_char(DT_INCOMING,'dd.mm.yyyy') ,count(V_CODE_CURRENCY)
+FROM fw_transfers
+where ID_CONTRACT_FROM=ID_CONTRACT_to
+group by to_char(DT_INCOMING,'dd.mm.yyyy');
