@@ -1,0 +1,3 @@
+select  substr(v_message,instr(v_message,'Загрузка порции заказов начиная с')+33,length(v_message) ) as номера
+from fw_process_log 
+where n_action in(12)
