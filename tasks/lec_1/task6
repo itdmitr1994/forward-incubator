@@ -1,0 +1,4 @@
+select count(V_MESSAGE) as "количество завершённых процессы"
+from fw_process_log
+where v_message like '%завершен%'
+and DT_TIMESTAMP Between date'2018-03-01'and date'2018-03-31';
