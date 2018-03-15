@@ -1,0 +1,3 @@
+SELECT  count(sid) as количество
+FROM fw_process_log
+GROUP BY sid HAVING count(sid) > 1
