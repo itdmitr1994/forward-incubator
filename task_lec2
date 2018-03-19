@@ -1,1 +1,86 @@
+task 1
 
+
+task 2
+Первое решение
+select t.V_EXT_IDENT as "ЛС", t.DT_REG_EVENT as "Дата рег", nvl(f.V_NAME,'null') as "Деп"
+from fw_contracts t,fw_departments f
+where t.ID_DEPARTMENT (+)= f.ID_DEPARTMENT
+and t.V_STATUS = 'A'
+and dt_stop> current_timestamp 
+and dt_start <=current_timestamp
+group by f.V_NAME , t.v_ext_ident,t.dt_reg_event;
+второе решение
+select t.V_EXT_IDENT as "ЛС", t.DT_REG_EVENT as "Дата рег", nvl(f.V_NAME,'null') as "Деп"
+from fw_contracts t 
+left join fw_departments f
+on t.ID_DEPARTMENT = f.ID_DEPARTMENT
+where t.V_STATUS = 'A'
+and t.dt_stop> current_timestamp 
+and t.dt_start <=current_timestamp
+group by f.V_NAME , t.v_ext_ident,t.dt_reg_event;
+
+task 3
+select f.V_NAME
+from fw_departments f, (select ID_CONTRACT as conid from trans_external) t            
+group by f.V_NAME ,t.conid having count(t.conid)<2;
+
+task 4
+
+
+
+
+task 5
+
+select Count(t.id_contract),f.V_EXT_IDENT, f.v_status
+from trans_external t
+join fw_contracts f
+on t.id_contract = f.ID_CONTRACT_INST
+where t.DT_EVENT between '2017-01-01' and '2017-12-31'
+group by t.id_contract,f.V_EXT_IDENT, f.v_status
+having count(*)>3
+
+task 6
+
+select f.V_EXT_IDENT as "ЛС",t.v_status as "Статус",nvl(d.v_name,’’NULL) as "Департамент"
+from trans_external t
+join fw_contracts f
+on t.ID_CONTRACT=f.ID_CONTRACT_INST
+left join fw_departments d
+on f.ID_DEPARTMENT=d.ID_DEPARTMENT
+where DT_EVENT between '2017-01-01' and '2017-12-31'
+group by f.V_EXT_IDENT,t.v_status,d.v_name
+
+task 7
+
+select fd.V_NAME as "нет контрактов"
+from fw_departments fd
+left join fw_contracts fc
+on fd.ID_DEPARTMENT=fc.ID_DEPARTMENT
+where ID_CONTRACT_INST is null
+
+task 8
+
+
+task 9
+
+select f.V_EXT_IDENT as "ЛС"
+from trans_external t
+join fw_contracts f
+on t.ID_CONTRACT=f.ID_CONTRACT_INST
+where t.ID_TRANS = '6397542' 
+and dt_stop >='2016-01-01'
+and dt_start<= '2016-01-01'
+
+task 10
+
+
+task 11
+
+select a.ID_CONTRACT as "несколько записей"
+from trans_external a
+join fw_contracts b
+ on a.ID_CONTRACT=b.ID_CONTRACT_INST
+where b.V_STATUS = 'C'
+group by a.ID_CONTRACT
+having a.ID_CONTRACT >1;
