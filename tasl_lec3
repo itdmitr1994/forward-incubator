@@ -1,0 +1,147 @@
+1.
+
+with TAB as (select
+fc.v_ext_ident as lc, sum(fs.n_cost_period) as AP,fd.v_name as dep
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<= localtimestamp
+and fs.dt_stop> localtimestamp
+group by fc.v_ext_ident,fd.v_name)
+
+select lc,ap
+from TAB
+where  ap >=(select avg (ap)
+                from TAB)
+              
+2.
+
+with TAB as (select
+fc.v_ext_ident as ls, sum(fs.n_cost_period) as AP,fd.v_name as dep,fse.v_name as "услуга"
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+join fw_services fses on fc.id_contract_inst=fses.id_contract_inst
+join fw_service fse on fses.id_service=fse.id_service
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<= localtimestamp
+and fs.dt_stop> localtimestamp
+and fses.dt_start<= localtimestamp
+and fses.dt_stop> localtimestamp
+and fse.b_deleted = 0
+and fd.b_deleted = 0
+group by fc.v_ext_ident,fd.v_name,fse.v_name)
+
+select "услуга",dep,ap
+from TAB
+where  ap >=(select avg (ap)
+                from TAB)
+
+3.1
+
+with TAB as (select
+fc.v_ext_ident as ls, sum(fs.n_cost_period) as sumAP,fd.v_name as dep,fse.v_name as "услуга",count(distinct nvl(fs.n_discount_period,0)) as sumS,fs.dt_stop,fs.dt_start,
+fs.id_contract_inst as colcon
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+join fw_services fses on fc.id_contract_inst=fses.id_contract_inst
+join fw_service fse on fses.id_service=fse.id_service
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<=to_date ('01.11.2017','dd.mm.yyyy')
+and fs.dt_stop>=to_date('30.11.2017','dd.mm.yyyy')
+and fses.dt_start<= localtimestamp
+and fses.dt_stop> localtimestamp
+and fse.b_deleted = 0
+and fd.b_deleted = 0
+
+group by fc.v_ext_ident,fd.v_name,fse.v_name,fs.n_discount_period,fs.dt_stop,fs.dt_start,fs.id_contract_inst --having count(distinct fs.n_discount_period)>2
+) 
+
+select ls,sumap
+from TAB
+ where dt_start <= localtimestamp
+and dt_stop > localtimestamp
+group by  ls,sumap
+ having count(colcon) >= 2
+
+3.2
+
+with TAB as (select
+fc.v_ext_ident as ls, sum(fs.n_cost_period) as sumAP,fd.v_name as dep,fse.v_name as "услуга",count(fs.n_discount_period) as sumS,fs.dt_stop,fs.dt_start,
+fs.id_contract_inst as colcon
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+join fw_services fses on fc.id_contract_inst=fses.id_contract_inst
+join fw_service fse on fses.id_service=fse.id_service
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<=to_date ('01.11.2017','dd.mm.yyyy')
+and fs.dt_stop>=to_date('30.11.2017','dd.mm.yyyy')
+and fses.dt_start<= localtimestamp
+and fses.dt_stop> localtimestamp
+and fse.b_deleted = 0
+and fd.b_deleted = 0
+
+group by fc.v_ext_ident,fd.v_name,fse.v_name,fs.n_discount_period,fs.dt_stop,fs.dt_start,fs.id_contract_inst) 
+
+select ls,sums
+from TAB
+group by  ls,sums
+
+5.
+
+with TAB as (select distinct fser.v_name as nT,sum(fsc.n_cost_period) as sumA,fd.v_name as dep
+from fw_services_cost fsc
+join fw_services fs on fsc.id_contract_inst=fs.id_contract_inst
+and fs.dt_start<=localtimestamp
+and fs.dt_stop>localtimestamp
+join fw_service fser on fs.id_service = fser.id_service
+and fser.b_deleted = 0
+join fw_contracts fc on fsc.id_contract_inst=fc.id_contract_inst
+and fc.dt_start<=localtimestamp
+and fc.dt_stop>localtimestamp
+join fw_departments fd on fc.id_department=fd.id_department
+and fd.b_deleted = 0
+where fsc.dt_start<=localtimestamp
+and fsc.dt_stop>localtimestamp
+group by fser.v_name,fsc.n_cost_period,fd.v_name
+order by sum(fsc.n_cost_period) desc)
+
+
+select dep,nT,sumA
+from tab
+where rownum <=5
+
+6.
+
+with TAB as (select fser.v_name as nT,sum(fsc.n_cost_period) as sumA,fd.v_name as dep,
+ftp.v_name as nTP
+from fw_services_cost fsc
+join fw_services fs on fsc.id_contract_inst=fs.id_contract_inst
+and fs.dt_start<=localtimestamp
+and fs.dt_stop>localtimestamp
+join fw_service fser on fs.id_service = fser.id_service
+and fser.b_deleted = 0
+join fw_contracts fc on fsc.id_contract_inst=fc.id_contract_inst
+and fc.dt_start<=localtimestamp
+and fc.dt_stop>localtimestamp
+join fw_departments fd on fc.id_department=fd.id_department
+and fd.b_deleted = 0
+join fw_tariff_plan ftp on fs.id_tariff_plan=ftp.id_tariff_plan
+and ftp.dt_start<=localtimestamp
+and ftp.dt_stop>localtimestamp
+where fsc.dt_start<=to_date('28.02.2018','dd.mm.yyyy')
+and fsc.dt_stop>=to_date('28.02.2018','dd.mm.yyyy')
+group by fser.v_name,fsc.n_cost_period,fd.v_name,ftp.v_name
+order by sum(fsc.n_cost_period) desc
+)
+
+select dep,nTP,sumA
+from tab
+where rownum <=5
