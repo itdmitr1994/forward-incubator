@@ -1,0 +1,6 @@
+select count(ID_PROCESS) as a, count(distinct V_MESSAGE) as b
+from fw_process_log 
+where  ID_PROCESS = '5'
+and V_MESSAGE like '%ошибк%'
+and DT_TIMESTAMP >'2018-02-22'
+and DT_TIMESTAMP<'2018-03-02'
