@@ -1,5 +1,21 @@
 task 1
 
+select dat,f_sum 
+from ( 
+select t.dt_event as dat, id_trans as idtr 
+from 
+fw_contracts b, 
+trans_external t 
+where 
+b.v_ext_ident = '0102100000088207_MG1' 
+and b.ID_CONTRACT_INST=t.ID_CONTRACT 
+order by t.dt_event desc 
+) dop, 
+trans_external 
+where 
+rownum < 2 
+and dop.idtr = id_trans;
+
 
 task 2
 Первое решение
