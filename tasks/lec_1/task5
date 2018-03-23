@@ -1,0 +1,6 @@
+select 
+sum(to_number(to_char(to_timestamp(substr(v_message,instr(v_message,'000000000')+10,length(v_message)),'hh24:mi:ss.ff9'),'ff9'))) 
+from 
+FW_PROCESS_LOG 
+where 
+v_message like '%000000000%'
