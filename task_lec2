@@ -19,7 +19,7 @@ and dop.idtr = id_trans;
 
 task 2
 Первое решение
-select t.V_EXT_IDENT as "ЛС", t.DT_REG_EVENT as "Дата рег", nvl(f.V_NAME,'null') as "Деп"
+select t.V_EXT_IDENT as "ЛС", t.DT_REG_EVENT as "Дата рег",f.V_NAME as "Деп"
 from fw_contracts t,fw_departments f
 where t.ID_DEPARTMENT (+)= f.ID_DEPARTMENT
 and t.V_STATUS = 'A'
@@ -27,7 +27,7 @@ and dt_stop> current_timestamp
 and dt_start <=current_timestamp
 group by f.V_NAME , t.v_ext_ident,t.dt_reg_event;
 второе решение
-select t.V_EXT_IDENT as "ЛС", t.DT_REG_EVENT as "Дата рег", nvl(f.V_NAME,'null') as "Деп"
+select t.V_EXT_IDENT as "ЛС", t.DT_REG_EVENT as "Дата рег",f.V_NAME as "Деп"
 from fw_contracts t 
 left join fw_departments f
 on t.ID_DEPARTMENT = f.ID_DEPARTMENT
@@ -58,7 +58,7 @@ having count(*)>3
 
 task 6
 
-select f.V_EXT_IDENT as "ЛС",t.v_status as "Статус",nvl(d.v_name,’’NULL) as "Департамент"
+select f.V_EXT_IDENT as "ЛС",t.v_status as "Статус",d.v_name as "Департамент"
 from trans_external t
 join fw_contracts f
 on t.ID_CONTRACT=f.ID_CONTRACT_INST
