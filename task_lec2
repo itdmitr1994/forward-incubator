@@ -77,6 +77,16 @@ where ID_CONTRACT_INST is null
 
 task 8
 
+select b.id_contract, count(b.id_trans), mxdt, q.id_manager ,v_ext_ident LC
+from trans_external b, (select max(dt_event) mxdt, id_contract conid 
+from 
+trans_external 
+group by id_contract) t 
+left join trans_external q on q.id_contract=t.conid and q.dt_event=t.mxdt 
+left join fw_contracts fc on t.conid=fc.id_contract_inst
+where t.conid=b.id_contract 
+group by b.id_contract,mxdt,q.id_manager,v_ext_ident
+
 
 task 9
 
