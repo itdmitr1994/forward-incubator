@@ -43,6 +43,15 @@ group by f.V_NAME ,t.conid having count(t.conid)<2;
 
 task 4
 
+select fd.v_name as dep,tt.sumf,tt."кол-во платежей",tt."кол-во контр"
+from fw_departments fd
+ join
+(select sum(F_SUM)as sumf, count(ID_TRANS) as "кол-во платежей", trunc (localtimestamp,'mm'),count(ID_CONTRACT)as "кол-во контр",fc.id_department as dep
+from trans_external te
+left join fw_contracts fc on te.id_contract=fc.id_contract_inst group by DT_EVENT,trunc (localtimestamp,'mm'),fc.id_department) tt
+on tt.dep=fd.id_department
+
+group by fd.v_name,tt.sumf,tt."кол-во платежей",tt."кол-во контр"
 
 
 
