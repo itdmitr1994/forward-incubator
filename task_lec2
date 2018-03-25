@@ -46,7 +46,7 @@ task 4
 select fd.v_name as dep,tt.sumf,tt."кол-во платежей",tt."кол-во контр"
 from fw_departments fd
  join
-(select sum(F_SUM)as sumf, count(ID_TRANS) as "кол-во платежей", trunc (localtimestamp,'mm'),count(ID_CONTRACT)as "кол-во контр",fc.id_department as dep
+(select sum(F_SUM)as sumf, count(ID_TRANS) as "кол-во платежей", LAST_DAY(to_date('03','mm')),count(ID_CONTRACT)as "кол-во контр",fc.id_department as dep
 from trans_external te
 left join fw_contracts fc on te.id_contract=fc.id_contract_inst group by DT_EVENT,trunc (localtimestamp,'mm'),fc.id_department) tt
 on tt.dep=fd.id_department
