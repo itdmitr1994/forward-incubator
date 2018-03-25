@@ -100,6 +100,17 @@ and dt_start<= '2016-01-01'
 
 task 10
 
+select id_contract_inst as id, v_ext_ident as LC, v_status as s, fcur.v_name v 
+from fw_contracts fc
+join 
+(select  id_contract_inst as id
+from fw_contracts
+group by id_contract_inst	having count(distinct nvl(id_currency, '0'))>1
+) t
+on fc.id_contract_inst = t.id
+left join fw_currency fcur on fcur.id_currency = fc.id_currency
+where dt_stop > localtimestamp
+and dt_start < localtimestamp
 
 task 11
 
