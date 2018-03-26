@@ -94,6 +94,59 @@ select ls,sums
 from TAB
 group by  ls,sums
 
+
+4.
+
+4.1
+with tt as (select 
+a.id_contract_inst as id, 
+(sum(a.n_cost_period) -
+sum(q.n_cost_period)) as "разница"
+
+from FW_SERVICES_COST a 
+left join FW_SERVICES_COST b on b.id_contract_inst=a.id_contract_inst and last_day(add_months(localtimestamp,-2)) between b.dt_start and b.dt_stop 
+left join FW_SERVICES_COST q on q.id_contract_inst=a.id_contract_inst and last_day(add_months(localtimestamp,-6)) between q.dt_start and q.dt_stop 
+
+where 
+last_day(add_months(localtimestamp,-1)) between a.dt_start and a.dt_stop
+group by a.id_contract_inst) 
+
+select id,"разница"
+from tt
+where "разница" != '0'
+
+
+4.2
+with tab as (select 
+a.id_contract_inst as id , 
+tp.v_name as np,
+sum(a.n_cost_period) month1, 
+sum(b.n_cost_period) month2, 
+sum(c.n_cost_period) month3, 
+sum(d.n_cost_period) month4, 
+sum(e.n_cost_period) month5, 
+sum(q.n_cost_period) month6
+
+from FW_SERVICES_COST a 
+left join FW_SERVICES_COST b on b.id_contract_inst=a.id_contract_inst and last_day(add_months(localtimestamp,-2)) between b.dt_start and b.dt_stop 
+left join FW_SERVICES_COST c on c.id_contract_inst=a.id_contract_inst and last_day(add_months(localtimestamp,-3)) between c.dt_start and c.dt_stop 
+left join FW_SERVICES_COST d on d.id_contract_inst=a.id_contract_inst and last_day(add_months(localtimestamp,-4)) between d.dt_start and d.dt_stop 
+left join FW_SERVICES_COST e on e.id_contract_inst=a.id_contract_inst and last_day(add_months(localtimestamp,-5)) between e.dt_start and e.dt_stop 
+left join FW_SERVICES_COST q on q.id_contract_inst=a.id_contract_inst and last_day(add_months(localtimestamp,-6)) between q.dt_start and q.dt_stop 
+
+join fw_services fs on a.id_service_inst=fs.id_service_inst
+join fw_tariff_plan tp on fs.id_tariff_plan=tp.id_tariff_plan
+
+where 
+last_day(add_months(sysdate,-1)) between a.dt_start and a.dt_stop 
+group by a.id_contract_inst,tp.v_name)
+
+select id, np
+from tab
+
+
+
+
 5.
 
 with TAB as (select distinct fser.v_name as nT,sum(fsc.n_cost_period) as sumA,fd.v_name as dep
@@ -145,3 +198,153 @@ order by sum(fsc.n_cost_period) desc
 select dep,nTP,sumA
 from tab
 where rownum <=5
+
+
+7.
+
+with TAB as (
+    select fse.v_name as n,fses.id_contract_inst as id,fd.v_name as ndep,fd.id_department as dep,
+rank() over(partition by fd.id_department order by fse.v_name ) as rmax
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+join fw_services fses on fc.id_contract_inst=fses.id_contract_inst
+join fw_service fse on fses.id_service=fse.id_service
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<= localtimestamp
+and fs.dt_stop> localtimestamp
+and fses.dt_start<= localtimestamp
+and fses.dt_stop> localtimestamp
+and fse.b_deleted = 0
+and fd.b_deleted = 0
+group by fse.v_name,fses.id_contract_inst,fd.v_name,fd.id_department --having count(*)>1?
+order by fses.id_contract_inst
+)
+
+select ndep,max(n)as "Популярная",min(n) as "Непопулярная" from tab group by ndep
+
+8.
+
+with tab as (select fcs.v_ext_ident as LC,fd.v_name as ndep, n, t."%", rank () over (partition by t."%" order by n ) as rank
+from
+(select count (v_name) as n, fsc.id_contract_inst as id
+from fw_service fc 
+join fw_services fs on fc.id_service=fs.id_service and fs.dt_start<= localtimestamp
+and fs.dt_stop> localtimestamp and fc.b_deleted = 0
+
+join fw_services_cost fsc on fs.id_contract_inst=fsc.id_contract_inst and fsc.dt_start<= localtimestamp
+and fsc.dt_stop> localtimestamp
+
+group by fsc.id_contract_inst) c
+
+join (select fw.n_cost_period/100*30 as "%", fw.id_contract_inst as id
+from fw_services_cost fw order by "%" desc) t on t.id=c.id
+
+join fw_contracts fcs on fcs.id_contract_inst=t.id and fcs.dt_stop> localtimestamp
+and fcs.dt_start<= localtimestamp
+
+join fw_departments fd on fd.id_department=fcs.id_department and fd.b_deleted = 0
+group by fcs.v_ext_ident,fd.v_name, n,t."%" having count (*)>1
+--order by "%" desc
+)
+
+select LC,ndep, n from tab 
+group by LC,ndep, n
+
+order by n desc
+
+11.
+
+with tab as (select tp.v_name as nt, sum(fsc.n_cost_period) as suma--,fd.v_name as ndep
+,fd.id_department as id
+
+from fw_tariff_plan tp
+join fw_services fss on tp.id_tariff_plan=fss.id_tariff_plan and tp.b_deleted = 0
+join fw_service fs on fss.id_service=fs.id_service and fs.b_deleted = 0
+join fw_services_cost fsc on fss.id_contract_inst= fsc.id_contract_inst
+join fw_contracts fc on fsc.id_contract_inst=fc.id_contract_inst
+
+join fw_departments fd on fc.id_department=fd.id_department
+where fs.b_add_service =0
+group by tp.v_name,fd.id_department
+)
+
+select tt.ndep,max(suma),nt from tab a
+join (select fd.v_name as ndep, fd.id_department as id 
+                    from fw_contracts fc 
+                     join fw_departments fd on fc.id_department=fd.id_department and fd.b_deleted=0) tt
+                     on tt.id=a.id
+group by nt,tt.ndep;
+
+
+12.
+
+
+with TAB as (
+    select --fse.v_name as n,fses.id_contract_inst as id,
+    fd.v_name as ndep,
+    fd.id_department as dep,
+rank() over(partition by fs.id_contract_inst order by sum(nvl(fs.n_cost_period,0)) ) as rmax,
+sum(nvl(fs.n_cost_period,0)) as sum,fs.id_contract_inst as idc,fses.v_ext_ident as LC
+--rank() over(partition by fd.id_department order by fse.v_name ) as rmin
+ -- dense_rank()over  (partition by fses.id_contract_inst order by fse.v_name desc) as rnk_dense_max
+ --dense_rank() over(partition by fse.v_name order by fses.id_contract_inst asc) as rnk_dense_min
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+join fw_services fses on fc.id_contract_inst=fses.id_contract_inst
+join fw_service fse on fses.id_service=fse.id_service
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<= localtimestamp
+and fs.dt_stop> localtimestamp
+and fses.dt_start<= localtimestamp
+and fses.dt_stop> localtimestamp
+and fse.b_deleted = 0
+and fd.b_deleted = 0
+group by fse.v_name,fses.id_contract_inst,fd.v_name,fd.id_department,fs.id_contract_inst,fses.v_ext_ident,fs.n_cost_period-- having count(*)>1
+--order by fses.id_contract_inst
+)
+select LC,max(sum)as max,min(sum) as min,ndep from tab group by ndep,LC
+
+13.
+
+with tab as (select tp.v_name as nt,  sum as suma,fd.v_name as ndep
+,fd.id_department as id,
+
+dense_rank () over (partition by fd.v_name order by  sum desc) as rankmax
+--,rank () over (partition by fd.v_name  order by sum asc) as rankmin
+
+from fw_tariff_plan tp
+join fw_services fss on tp.id_tariff_plan=fss.id_tariff_plan and tp.b_deleted = 0
+join fw_service fs on fss.id_service=fs.id_service and fs.b_deleted = 0
+join fw_services_cost fsc on fss.id_contract_inst= fsc.id_contract_inst
+join fw_contracts fc on fsc.id_contract_inst=fc.id_contract_inst
+
+join fw_departments fd on fc.id_department=fd.id_department
+join (select sum(n_cost_period) as sum,id_contract_inst as id from fw_services_cost group by id_contract_inst) tt
+on tt.id= fsc.id_contract_inst
+
+where fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fsc.dt_start<= localtimestamp
+and fsc.dt_stop> localtimestamp
+and fss.dt_start<= localtimestamp
+and fss.dt_stop> localtimestamp
+and tp.dt_start<= localtimestamp
+and tp.dt_stop> localtimestamp
+
+group by tp.v_name,fd.id_department,fd.v_name,sum
+--order by sum(fsc.n_cost_period) desc
+)
+
+select nt,ndep,rankmax,tt.rankmin 
+from tab a join (select
+dense_rank () over (partition by substr(b.ndep ,instr(b.ndep,'АЛМАТЫ')+1,6) order by  suma asc) as rankmin, b.id from tab b) tt
+on tt.id=a.id
+group by nt,ndep,suma,rankmax,tt.rankmin
+;
+
+
+
