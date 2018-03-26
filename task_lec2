@@ -132,19 +132,11 @@ group by a.ID_CONTRACT
 having a.ID_CONTRACT >1;
 
 task 12 задача из лекции
-select distinct sum,PF,lf
-from 
-(select max(te.f_sum) as sum,te.ID_CONTRACT as id, pp.P as PF  ,tt.LC as LF
-from trans_external te,
-(select cu.v_description as P
-from ci_users cu) PP,
-(select fc.v_ext_ident as LC
-from fw_contracts fc) tt
-group by te.ID_CONTRACT,pp.P,tt.LC)
-where PF >any
-(select case v_status
-when ' D' then cu.v_description
-ELSE 'NULL'
-end
-from ci_users cu)
-group by sum,pf,lf
+select sum,p,LC 
+from
+(select max(te.f_sum) as sum,te.ID_CONTRACT as id, cu.v_description as P, fc.v_ext_ident as LC
+from trans_external te
+left join ci_users cu on cu.ID_USER=te.ID_MANAGER
+left join fw_contracts fc on te.ID_CONTRACT=fc.ID_CONTRACT_INST
+group by te.ID_CONTRACT,cu.v_description,fc.v_ext_ident)
+group by sum,p,lC;
