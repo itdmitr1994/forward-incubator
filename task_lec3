@@ -347,4 +347,59 @@ group by nt,ndep,suma,rankmax,tt.rankmin
 ;
 
 
+14.
+with tab as (select fd.v_name as dep, count(fse.B_ADD_SERVICE)as "доп.услуги",
+fse.id_service, NTILE (5) over(order by fc.id_department) as "номер группы",fc.id_department 
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+join fw_services fses on fc.id_contract_inst=fses.id_contract_inst
+join fw_service fse on fses.id_service=fse.id_service
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<= localtimestamp
+and fs.dt_stop> localtimestamp
+and fses.dt_start<= localtimestamp
+and fses.dt_stop> localtimestamp
+and fse.b_deleted = 0
+and fd.b_deleted = 0
+and fse.B_ADD_SERVICE = '1'
+group by fd.v_name, fse.id_service,fc.id_department,fse.B_ADD_SERVICE,
+fse.id_service
+)
+select dep,  "доп.услуги" ,"номер группы"
+from tab
+group by dep,  "доп.услуги" ,"номер группы";
+Вывести количество доп.услуг, которые входят в 5 групп по филиально на текущую дату
+Результат: наименование департаметов, количество доп.услуг, номер группы
+
+15.
+with tab as (select fd.v_name as dep,sum(fs.N_COST_PERIOD) as summ,
+fse.id_service, fc.id_department as dePP
+from fw_contracts fc
+join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
+join fw_departments fd on fc.id_department=fd.id_department
+join fw_services fses on fc.id_contract_inst=fses.id_contract_inst
+join fw_service fse on fses.id_service=fse.id_service
+join fw_services_cost fsc on fc.id_contract_inst=fsc.id_contract_inst
+where  fc.dt_start<= localtimestamp
+and fc.dt_stop> localtimestamp
+and fs.dt_start<= localtimestamp
+and fs.dt_stop> localtimestamp
+and fses.dt_start<= localtimestamp
+and fses.dt_stop> localtimestamp
+and fsc.dt_start<= localtimestamp
+and fsc.dt_stop> localtimestamp
+and fse.b_deleted = 0
+and fd.b_deleted = 0
+
+group by fd.v_name, fse.id_service,fc.id_department,
+fse.id_service
+)
+
+select dep, first_value (max(summ)) over (partition by dePP)as maxsum , last_value (min(summ)) over (partition by dePP) as minsum
+from tab
+group by dePP,dep;
+ Вывести максимальную и минимальную сумму АП по филиально на текущую дату
+Результат: наименование департаметов, максимальная сумма, минимальная сумма
 
