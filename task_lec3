@@ -1,7 +1,7 @@
 1.
 
 with TAB as (select
-fc.v_ext_ident as lc, sum(fs.n_cost_period) as AP,fd.v_name as dep
+fc.v_ext_ident as lc, sum(fs.n_cost_period) as AP,fd.v_name as dep,fc.id_department,fc.id_contract_inst
 from fw_contracts fc
 join FW_SERVICES_COST fs on fc.id_contract_inst=fs.id_contract_inst
 join fw_departments fd on fc.id_department=fd.id_department
@@ -9,12 +9,15 @@ where  fc.dt_start<= localtimestamp
 and fc.dt_stop> localtimestamp
 and fs.dt_start<= localtimestamp
 and fs.dt_stop> localtimestamp
-group by fc.v_ext_ident,fd.v_name)
+group by fd.v_name,fc.v_ext_ident,fc.id_department,fc.id_contract_inst)
 
-select lc,ap
-from TAB
-where  ap >=(select avg (ap)
-                from TAB)
+select t.lc,ap
+from TAB t
+where  t.ap >=(select avg (a.ap)
+                from TAB a
+                where a.id_department = t.id_department)
+
+   
               
 2.
 
@@ -267,7 +270,15 @@ from fw_departments fd
       join fw_services_cost fs on fc.id_contract_inst=fs.id_contract_inst
       join fw_services fss on fc.id_contract_inst=fss.id_contract_inst   
       join fw_service fse on fss.id_service=fse.id_service
-group by fd.v_name,          fc.v_ext_ident, fse.id_service--, fs.n_discount_period,fs.n_discount_period
+      
+    where  fc.dt_start<= localtimestamp
+    and fc.dt_stop> localtimestamp
+    and fs.dt_start<= localtimestamp
+    and fs.dt_stop> localtimestamp
+    and fd.b_deleted = 0
+    and fss.b_deleted = 0
+    and fse.b_deleted = 0
+group by fd.v_name, fc.v_ext_ident, fse.id_service
          )
          
 
@@ -293,7 +304,14 @@ from fw_departments fd
       join fw_services_cost fs on fc.id_contract_inst=fs.id_contract_inst
       join fw_services fss on fc.id_contract_inst=fss.id_contract_inst   
       join fw_service fse on fss.id_service=fse.id_service
-group by fd.v_name,          fc.v_ext_ident, fd.id_department--    fse.id_service--, fs.n_discount_period,fs.n_discount_period
+      where  fc.dt_start<= localtimestamp
+    and fc.dt_stop> localtimestamp
+    and fs.dt_start<= localtimestamp
+    and fs.dt_stop> localtimestamp
+    and fd.b_deleted = 0
+    and fss.b_deleted = 0
+    and fse.b_deleted = 0
+group by fd.v_name,fc.v_ext_ident, fd.id_department
          )
          
 
