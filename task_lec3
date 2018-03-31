@@ -254,6 +254,58 @@ group by LC,ndep, n
 
 order by n desc
 
+
+10.1
+with tab as (select  fd.v_name as dep, 
+        fc.v_ext_ident as LC, 
+        (sum(nvl(fs.n_discount_period,0)) / sum(nvl(fs.n_cost_period,0))) as "Разница", 
+        first_value ( sum(fs.n_discount_period)) over (partition by fse.id_service ) as maxS,
+        
+        first_value (sum(fs.n_cost_period)) over (partition by fse.id_service ) as maxAP
+from fw_departments fd 
+      join fw_contracts fc on fd.id_department=fc.id_department
+      join fw_services_cost fs on fc.id_contract_inst=fs.id_contract_inst
+      join fw_services fss on fc.id_contract_inst=fss.id_contract_inst   
+      join fw_service fse on fss.id_service=fse.id_service
+group by fd.v_name,          fc.v_ext_ident, fse.id_service--, fs.n_discount_period,fs.n_discount_period
+         )
+         
+
+select tt.dep, tt.LC,tt."АП", tt."скидка"
+from
+            (select dep,LC, max("Разница")as RR ,maxS as "скидка", maxAP as "АП"
+            from tab
+         
+            group by dep,LC,maxS,maxAP,"Разница") tt
+            
+            ;
+            
+10.2
+
+with tab as (select  fd.v_name as dep, 
+        fc.v_ext_ident as LC, 
+        (sum(nvl(fs.n_discount_period,0)) / sum(nvl(fs.n_cost_period,0))) as "Разница", 
+        first_value ( sum(fs.n_discount_period)) over (partition by fd.id_department ) as maxS,
+        
+        first_value (sum(fs.n_cost_period)) over (partition by fd.id_department ) as maxAP
+from fw_departments fd 
+      join fw_contracts fc on fd.id_department=fc.id_department
+      join fw_services_cost fs on fc.id_contract_inst=fs.id_contract_inst
+      join fw_services fss on fc.id_contract_inst=fss.id_contract_inst   
+      join fw_service fse on fss.id_service=fse.id_service
+group by fd.v_name,          fc.v_ext_ident, fd.id_department--    fse.id_service--, fs.n_discount_period,fs.n_discount_period
+         )
+         
+
+select tt.dep, tt.LC,tt."АП", tt."скидка"
+from
+            (select dep,LC, max("Разница")as RR ,maxS as "скидка", maxAP as "АП"
+            from tab
+         
+            group by dep,LC,maxS,maxAP,"Разница") tt
+
+
+
 11.
 
 with tab as (select tp.v_name as nt, sum(fsc.n_cost_period) as suma--,fd.v_name as ndep
