@@ -1,0 +1,81 @@
+1.
+Установлен
+SQL*Plus: Release 12.2.0.1.0 Production
+
+2. 
+Установлен 
+10.0.3.1701
+
+3.
+create or replace PROCEDURE task1 ( dt1 in date,dt2 in date, cur OUT sys_refcursor)
+is
+BEGIN
+open cur for 
+with tab as (select fc.V_EXT_IDENT as LC, fd.v_name as dep, sum(te.f_sum) as suma ,tt."сумм.последнего плат",te.id_contract
+from trans_external te 
+                join (select F_SUM as "сумм.последнего плат",id_contract as id, max(DT_EVENT)
+                
+                from trans_external 
+
+                where trunc(dt_event) between dt1 and dt2
+                group by F_SUM,ID_CONTRACT,DT_EVENT
+                
+) tt on te.id_contract=tt.id
+
+join fw_contracts fc on te.id_contract=fc.id_contract_inst 
+
+join FW_DEPARTMENTS fd on fc.ID_DEPARTMENT=fd.ID_DEPARTMENT 
+
+where trunc(te.dt_event) between dt1 and dt2
+
+group by fc.V_EXT_IDENT, fd.v_name,tt."сумм.последнего плат",te.id_contract)
+
+select lc,dep,suma,"сумм.последнего плат"
+from tab;
+
+END;
+
+
+
+
+4.
+
+
+--Задача 4
+create or replace procedure work4 (diap_start number, 
+diap_stop number, 
+old_id fw_identifiers.id_service_identifier%type, 
+new_id fw_identifiers.id_service_identifier%type) 
+is 
+begin 
+update fw_identifiers 
+set id_service_identifier = new_id 
+where id_service_identifier = old_id 
+and to_number(v_value) between diap_start and diap_stop; 
+
+end;
+select * from fw_identifiers;
+
+select v_name from fw_service_identifiers;
+
+
+4.1
+
+create or replace procedure work2 (old_id fw_service_identifiers.id_service_identifier%type, 
+new_id fw_service_identifiers.id_service_identifier%type) 
+is 
+n number; 
+begin 
+--проверяем наличие услуги 
+select count(*) into n 
+from fw_service_identifiers;
+--если есть привязка выдаём ошибку 
+if n > 0 then 
+raise_application_error (-2000,'Есть привязка к услуги'); 
+end if; 
+
+update fw_service_identifiers
+set id_service_identifier = new_id 
+where id_service_identifier = old_id ;
+
+end;
