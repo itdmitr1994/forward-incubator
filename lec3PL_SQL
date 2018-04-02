@@ -54,9 +54,6 @@ where id_service_identifier = old_id
 and to_number(v_value) between diap_start and diap_stop; 
 
 end;
-select * from fw_identifiers;
-
-select v_name from fw_service_identifiers;
 
 
 4.1
