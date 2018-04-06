@@ -1,0 +1,115 @@
+
+procedure saveCOMMUTATOR (
+              	                                           pV_id in INCB_COMMUTATOR.id_commutator%type,
+	                                                         pV_address in INCB_COMMUTATOR.ip_address%type,
+	                                                         pV_commutator_type in INCB_COMMUTATOR.id_commutator_type%type,
+	                                                         pV_description in INCB_COMMUTATOR.v_description%type,
+	                                                         pV_deleted in INCB_COMMUTATOR.b_deleted%type,
+	                                                         pID_mac in INCB_COMMUTATOR.v_mac_address%type,
+                                                           pV_read in  INCB_COMMUTATOR.v_community_read%type,
+                                                           pV_write in INCB_COMMUTATOR.v_community_write%type,
+                                                           pV_remote_id in INCB_COMMUTATOR.remote_id%type,
+                                                           pV_hex in INCB_COMMUTATOR.b_need_convert_hex%type,
+                                                           pV_id_hex in INCB_COMMUTATOR.remote_id_hex %type,
+                                                           pACTION in number ) is
+l_cnt integer;
+
+begin
+ case pAction when 0 then
+
+  select count(1)
+    into l_cnt
+      from INCB_COMMUTATOR
+         where B_DELETED = 0 
+           and pV_address=ip_address or pID_mac=v_mac_address;
+        if l_cnt!=0 then 
+            RAISE_APPLICATION_ERROR(-2002, 'IP адрес или mac адрес не уникален');
+        end if;
+ 
+ 
+ if b_need_convert_hex=1 then
+     b_need_convert_hex=pV_hex
+     else b_need_convert_hex = 0 then
+       b_need_convert_hex  is null   
+       end if;
+      
+     if ip_address is null then RAISE_APPLICATION_ERROR(-2003, 'IP адрес не заполнен');
+       end if;
+      IF v_mac_address is null then RAISE_APPLICATION_ERROR(-2004, 'mac адрес не заполнен');
+        end if;
+         IF  remote_id is null then RAISE_APPLICATION_ERROR(-2005, 'Идентификатор коммутатора во внешней среде не заполнен');
+         end if;
+   
+     
+          if substr(ip_address,2,1)!='.' or substr(ip_address,3,1)!='.' THEN
+                                                                RAISE_APPLICATION_ERROR (-2006, 'IP адрес не верен')
+                               else substr(ip_address,2,1)='.' or substr(ip_address,3,1)='.' then 
+                                         instr(ip_address,' ')!=0 then
+                                                                RAISE_APPLICATION_ERROR (-2007, 'содержит пробелы')
+                                                                --дописать содержит только цифры и '.'
+                           ;
+          end if;
+          
+INSERT into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (incb_commutator.nextval , pv_address, pV_commutator_type,pV_description,pV_deleted , pID_mac, pV_read, 
+pV_read, pV_write,pV_remote_id , pV_hex,  pV_id_hex)
+    
+when 1 then
+    
+  select count(1)
+    into l_cnt
+      from INCB_COMMUTATOR
+         where B_DELETED = 0 
+           and pV_address=ip_address or pID_mac=v_mac_address;
+        if l_cnt!=0 then 
+            RAISE_APPLICATION_ERROR(-2002, 'IP адрес или mac адрес не уникален');
+        end if;
+ 
+ 
+ if b_need_convert_hex=1 then
+     b_need_convert_hex=pV_hex
+     else b_need_convert_hex = 0 then
+       b_need_convert_hex  is null   
+       end if;
+      
+     if ip_address is null then RAISE_APPLICATION_ERROR(-2003, 'IP адрес не заполнен');
+       end if;
+      IF v_mac_address is null then RAISE_APPLICATION_ERROR(-2004, 'mac адрес не заполнен');
+        end if;
+         IF  remote_id is null then RAISE_APPLICATION_ERROR(-2005, 'Идентификатор коммутатора во внешней среде не заполнен');
+         end if; 
+      
+      update INCB_COMMUTATOR
+      set 
+      id_commutator=pv_id, ip_address=pv_address, id_commutator_type=pV_commutator_type, v_description= pV_description, b_deleted=pV_deleted , pID_mac=v_mac_address, pV_read=v_mac_address , pV_read=v_community_read,
+    pV_write=v_community_write,pV_remote_id=remote_id , pV_hex=b_need_convert_hex,  pV_id_hex=remote_id_hex
+ end if;
+ 
+ when 2 then 
+   
+   delete from INCB_COMMUTATOR   
+  
+
+ end case;
+ 
+ create or replace PROCEDURE getcommutator(pDWR  out sys_refcursor         
+                                                           pV_id in INCB_COMMUTATOR.id_commutator%type,
+	                                                         pV_address in INCB_COMMUTATOR.ip_address%type,
+	                                                         pV_commutator_type in INCB_COMMUTATOR.id_commutator_type%type,
+	                                                         pV_description in INCB_COMMUTATOR.v_description%type,
+	                                                         pV_deleted in INCB_COMMUTATOR.b_deleted%type,
+	                                                         pID_mac in INCB_COMMUTATOR.v_mac_address%type,
+                                                           pV_read in  INCB_COMMUTATOR.v_community_read%type,
+                                                           pV_write in INCB_COMMUTATOR.v_community_write%type,
+                                                           pV_remote_id in INCB_COMMUTATOR.remote_id%type,
+                                                           pV_hex in INCB_COMMUTATOR.b_need_convert_hex%type,
+                                                           pV_id_hex in INCB_COMMUTATOR.remote_id_hex %type,
+                                                           pACTION in number ) is
+ 
+ 
+ --дописать
+ ---------------------
+ 
+ 
+ 
+ end;
