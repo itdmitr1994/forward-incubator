@@ -55,6 +55,17 @@ and to_number(v_value) between diap_start and diap_stop;
 
 end;
 
+4.2
+
+-Задача 4.2
+create or replace procedure task4_2 
+       (name_v fw_service_identifier.v_name%type)
+ is
+ BEGIN
+ update fw_service_identifier
+ set  fw_service_identifier.v_name = name_v;
+ end;
+
 
 4.1
 
