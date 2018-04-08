@@ -1,11 +1,12 @@
-1.
+--Задание 1.
+
 procedure saveCOMMUTATOR (
               	                                           pV_id in INCB_COMMUTATOR.id_commutator%type,
-	                                                         pV_address in INCB_COMMUTATOR.ip_address%type,
-	                                                         pV_commutator_type in INCB_COMMUTATOR.id_commutator_type%type,
-	                                                         pV_description in INCB_COMMUTATOR.v_description%type,
-	                                                         pV_deleted in INCB_COMMUTATOR.b_deleted%type,
-	                                                         pID_mac in INCB_COMMUTATOR.v_mac_address%type,
+	                                                   pV_address in INCB_COMMUTATOR.ip_address%type,
+	                                                   pV_commutator_type in INCB_COMMUTATOR.id_commutator_type%type,
+	                                                   pV_description in INCB_COMMUTATOR.v_description%type,
+	                                                   pV_deleted in INCB_COMMUTATOR.b_deleted%type,
+	                                                   pID_mac in INCB_COMMUTATOR.v_mac_address%type,
                                                            pV_read in  INCB_COMMUTATOR.v_community_read%type,
                                                            pV_write in INCB_COMMUTATOR.v_community_write%type,
                                                            pV_remote_id in INCB_COMMUTATOR.remote_id%type,
@@ -80,9 +81,18 @@ when 1 then
          end if; 
       
       update INCB_COMMUTATOR
-      set 
-      id_commutator=pv_id, ip_address=pv_address, id_commutator_type=pV_commutator_type, v_description= pV_description, b_deleted=pV_deleted , pID_mac=v_mac_address, pV_read=v_mac_address , pV_read=v_community_read,
-    pV_write=v_community_write,pV_remote_id=remote_id , pV_hex=b_need_convert_hex,  pV_id_hex=remote_id_hex
+      set id_commutator=pv_id, 
+      ip_address=pv_address, 
+      id_commutator_type=pV_commutator_type,
+      v_description= pV_description,
+      b_deleted=pV_deleted ,
+      v_mac_address=pID_mac, 
+      v_mac_address=pV_read , 
+      v_community_read=pV_read,
+      v_community_write=pV_write,
+      remote_id=pV_remote_id , 
+      b_need_convert_hex=pV_hex,
+      remote_id_hex=pV_id_hex
  end if;
  
  when 2 then 
@@ -104,12 +114,60 @@ when 1 then
                                                            pV_remote_id in INCB_COMMUTATOR.remote_id%type,
                                                            pV_hex in INCB_COMMUTATOR.b_need_convert_hex%type,
                                                            pV_id_hex in INCB_COMMUTATOR.remote_id_hex %type,
-                                                           pACTION in number ) is
+                                                           ) is
  
  
- --дописать
- ---------------------
+ begin 
+   open pdwr for
+   select * from INCB_COMMUTATOR
+   where 
+   pV_address = ip_address and  pV_id = id_commutator
  
  
  
  end;
+    -------------------------------------------------------------------
+    
+ --задание 2   
+    
+function check_access_comm (ip_address varchar2,
+                            B_MODE_WRITE number,
+                            V_COMMUNITY_READ varchar2,
+                            V_COMMUNITY_WRITE varchar2)
+  return number 
+    is 
+ 
+ 
+    begin
+        
+      if B_MODE_WRITE = 1
+        when V_COMMUNITY_READ = 'Доступ на чтение'
+          else B_MODE_WRITE = 0
+            when V_COMMUNITY_WRITE = 'Доступ на запись'
+          if end;
+       
+       EXCEPTION 
+        WHEN NO_DATA_FOUND THEN 
+         raise_application_error(-20001,'Данные не найдены'); 
+    end;
+        
+    
+   -----------------------------------------------------------------------
+   
+  --задание 3
+function get_remote_id(dwr out sys_refcursor, 
+                    pV_id in INCB_COMMUTATOR.id_commutator%type)
+                  
+   is
+   begin 
+     open dwr for 
+     
+    with tab as (select remote_id as id, REMOTE_ID_HEX as hex from INCB_COMMUTATOR 
+               where B_NEED_CONVERT_HEX = 1 and REMOTE_ID_HEX is null and id_commutator=pV_id )
+     select hex from tab;        
+      
+       EXCEPTION 
+        WHEN NO_DATA_FOUND THEN 
+         raise_application_error(-20001,'Данные не найдены'); 
+         
+   end;
