@@ -1,4 +1,37 @@
 --Задание 1.
+insert into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (100, '192.168.1.1', 'A','Cisco', '0','mac444','чтение','запись','mac444100','1', 'mac444100_1');
+
+insert into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (101, '192.168.1.2', 'C','mik', '0','mac555','чтение','запись','mac555101','1', 'mac555101_2');
+
+insert into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (102, '192.168.1.3', 'A','mik', '1','mac666','чтение','запись','mac666102','1', 'mac666102_3');
+
+insert into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (103, '192.168.1.4', 'B','Cisco', '0','mac777','чтение','запись','mac777103','0', 'mac777103_4');
+
+insert into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (104, '192.168.1.5', 'A','D-Link', '0','mac888','чтение','запись','mac888104','1', 'mac888104_5');
+
+insert into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (105, '192.168.1.6', 'B','Cisco', '0','mac999','чтение','запись','mac999105','0', 'mac999105_6');
+
+insert into INCB_COMMUTATOR (id_commutator, ip_address, id_commutator_type,  v_description, b_deleted,  v_mac_address, v_community_read, v_community_write, remote_id, b_need_convert_hex, remote_id_hex )
+values (106, '192.168.1.7', 'A','D-Link', '0','mac111','чтение','запись','mac111106','1', 'mac111106_7');
+
+CREATE OR REPLACE PACKAGE tesk100 IS
+  
+  PROCEDURE  inser;
+  procedure saveCOMMUTATOR;
+  create or replace PROCEDURE getcommutator;
+  function check_access_comm;
+  function get_remote_id;
+  
+  END tesk100;
+  
+  CREATE OR REPLACE package body tesk100 
+is 
 
 procedure saveCOMMUTATOR (
               	                                           pV_id in INCB_COMMUTATOR.id_commutator%type,
@@ -126,6 +159,7 @@ when 1 then
  
  
  end;
+ end task100;
     -------------------------------------------------------------------
     
  --задание 2   
