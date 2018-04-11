@@ -1,0 +1,54 @@
+
+select *
+from Fw_services fs
+left join fw_service_identifiers fsi on fs.id_service_inst=fsi.id_service_inst
+and fs.dt_start <= localtimestamp
+and fs.dt_stop > localtimestamp
+where fs.id_service = 2 and fsi.id_identifier is null
+
+--------
+
+if fsi.id_identifier is null then 
+
+
+--------------
+select * from fw_service_identifiers fsi
+join fw_services fs on fs.id_service_inst=fsi.id_service_inst
+
+where fsi.id_service_inst = 138169-- and fs.id_service = 2
+
+------------------------
+
+procedure create or replace p_base_exchange.saveIDENTIFIERS(pID_IDENTIFIER         IN OUT FW_IDENTIFIERS.ID_IDENTIFIER%TYPE,
+                           
+                             pV_VALUE               IN FW_IDENTIFIERS.V_VALUE%TYPE,
+                            pID_SERVICE_IDENTIFIER IN FW_IDENTIFIERS.ID_SERVICE_IDENTIFIER%TYPE,
+                            pV_STATUS              IN FW_IDENTIFIERS.V_STATUS%TYPE,
+                            pV_PASS                IN FW_IDENTIFIERS.V_PASS%TYPE,
+                            pV_EXT_IDENT           IN FW_IDENTIFIERS.V_EXT_IDENT%TYPE DEFAULT NULL,
+                            pACTION                IN NUMBER);
+                                                 
+   begin
+   DBMS_OUTPUT.enable;
+   for select count(*)
+           from Fw_services fs
+           left join fw_service_identifiers fsi on fs.id_service_inst=fsi.id_service_inst
+           and fs.dt_start <= localtimestamp
+           and fs.dt_stop > localtimestamp
+           where fs.id_service = 2 and fsi.id_identifier is null
+           and  pid_identifier = id_identifier;
+      
+      -------------
+    
+    DBMS_OUTPUT.PUT_LINE('Найдено ' ||count(*) || ' услуг');
+   
+    
+    update from fw_service_identifiers
+    set id_identifier = REPLACE pID_IDENTIFIER
+   WHERE pid_identifier is null
+   and pid_identifier=id_identifier;
+
+    
+      end;
+    
+    end;
